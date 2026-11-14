@@ -1,8 +1,8 @@
-use std::{error::Error, net::{SocketAddr, ToSocketAddrs}};
-use std::sync::mpsc::channel;
-use std::thread;
+use std::{error::Error, net::ToSocketAddrs};
 
 use clap::Parser;
+
+use crate::scanner::PortState;
 
 mod cli;
 mod ports;
@@ -12,7 +12,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = cli::Args::parse();
 
     let ports: Vec<u16> = args.ports.collect();
-    let chunk_size = ports.len().div_ceil(usize::from(args.threads));
 
     let ip = (args.target.as_str(), 0)
         .to_socket_addrs()?
@@ -20,28 +19,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         .ok_or("Invalid Target")?
         .ip();
 
-    let timeout = args.timeout;
-    
-    let (sender, receiver) = channel();
-    
-    for chunk in ports.chunks(chunk_size) {
-        let chunk = chunk.to_vec();
-        let cloned_sender = sender.clone();
-        thread::spawn(move || {
-            for port in chunk {
-                let addr = SocketAddr::new(ip, port);
-                let result = scanner::scan_port(addr, timeout);
-                cloned_sender.send((port, result)).unwrap();
-            } 
-        });
-    }
-    drop(sender);
+    let results = scanner::scan(ip, &ports, args.timeout, usize::from(args.threads));
 
-    for (port, state) in receiver {
-        if state == scanner::PortState::Open {
+    for (port, state) in results {
+        if state == PortState::Open {
             println!("{port}/tcp {state}");
         }
     }
-    
     Ok(())
 }
