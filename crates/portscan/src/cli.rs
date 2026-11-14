@@ -19,4 +19,18 @@ pub struct Args {
 
     #[arg(short, long, value_parser = parse_millis, default_value = "200")]
     pub timeout: Duration,
+
+    #[arg(short = 'T', long, default_value_t = 100, value_parser = clap::value_parser!(u16).range(1..=1000))]
+    pub threads: u16,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn verify_cli() {
+        Args::command().debug_assert();
+    }
 }
