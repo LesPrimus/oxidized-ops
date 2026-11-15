@@ -1149,6 +1149,7 @@ name = "scanner"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "portscan",
  "rayon",
  "reqwest",
  "serde",

@@ -2,11 +2,9 @@ use std::{error::Error, net::ToSocketAddrs};
 
 use clap::Parser;
 
-use crate::scanner::PortState;
+use portscan::scanner::{self, PortState};
 
 mod cli;
-mod ports;
-mod scanner;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = cli::Args::parse();

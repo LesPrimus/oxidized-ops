@@ -9,6 +9,7 @@ edition = "2024"
 [workspace.dependencies]
 # Shared dependency versions go here; crates opt in with `dep = { workspace = true }`.
 clap = { version = "4", features = ["derive"] }
+portscan = { path = "crates/portscan" }
 
 [profile.release]
 lto = true

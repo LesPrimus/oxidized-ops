@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use clap::Parser;
 
-use crate::ports::parse_ports;
+use portscan::ports::parse_ports;
 
 fn parse_millis(s: &str) -> Result<Duration, std::num::ParseIntError> {
     s.parse().map(Duration::from_millis)
