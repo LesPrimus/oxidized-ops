@@ -1,0 +1,12 @@
+[package]
+name = "scanner-async"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+clap.workspace = true
+futures = "0.3.34"
+portscan.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+serde = { workspace = true, features = ["derive"] }
+tokio = { version = "1.54.1", features = ["full"] }

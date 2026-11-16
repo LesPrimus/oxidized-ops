@@ -6,6 +6,6 @@ edition.workspace = true
 [dependencies]
 clap.workspace = true
 rayon = "1.12.0"
-reqwest = { version = "0.13.5", features = ["blocking", "json"] }
-serde = { version = "1.0.229", features = ["derive"] }
+reqwest = { workspace = true, features = ["blocking"] }
+serde.workspace = true
 portscan.workspace = true
