@@ -1438,6 +1438,7 @@ dependencies = [
  "portscan",
  "reqwest",
  "serde",
+ "thiserror",
  "tokio",
 ]
 

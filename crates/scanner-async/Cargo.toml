@@ -10,4 +10,5 @@ hickory-resolver = "0.26.3"
 portscan.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
+thiserror = "2.0.21"
 tokio = { version = "1.54.1", features = ["full"] }
