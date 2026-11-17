@@ -12,3 +12,10 @@ pub struct SubDomain {
 pub struct CrtEntry {
     pub name_value: String,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PortState {
+    Open,
+    Closed,
+    Filtered,
+}
