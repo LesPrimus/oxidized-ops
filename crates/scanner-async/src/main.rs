@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let modules = modules::subdomain_modules(&client);
 
-    let sub_domains = subdomains::enumerate(&modules, &args.domain, args.concurrency).await?;
+    let sub_domains = subdomains::discover(&modules, &args.domain, args.concurrency).await?;
 
     let mut names_by_ip: BTreeMap<IpAddr, BTreeSet<String>> = BTreeMap::new();
     for SubDomain { name, ips } in sub_domains {

@@ -5,7 +5,7 @@ use hickory_resolver::TokioResolver;
 
 use crate::{error::ScanError, models::SubDomain, modules::SubDomainModule};
 
-pub async fn enumerate(
+pub async fn discover(
     modules: &[Box<dyn SubDomainModule>],
     target: &str,
     concurrency: usize,
