@@ -1,11 +1,26 @@
 use std::ops::RangeInclusive;
 
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 use portscan::ports::parse_ports;
 
 #[derive(Debug, Parser)]
 #[command(version, about)]
-pub struct Args {
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Command,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum Command {
+    /// List all available modules
+    Modules,
+    /// Discover subdomains of a domain and scan their ports.
+    Scan(ScanArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct ScanArgs {
+    /// Target domain, e.g. example.com
     pub domain: String,
 
     #[arg(short, long, value_parser = parse_ports, default_value = "1-1024")]

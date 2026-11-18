@@ -8,7 +8,11 @@ use std::{
 use clap::Parser;
 use reqwest::Client;
 
-use crate::models::SubDomain;
+use crate::{
+    cli::{Command, ScanArgs},
+    error::ScanError,
+    models::SubDomain,
+};
 
 mod cli;
 mod error;
@@ -19,12 +23,28 @@ mod subdomains;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let args = cli::Args::parse();
+    let cli = cli::Cli::parse();
 
     let http_timeout = Duration::from_secs(30);
     let client = Client::builder().timeout(http_timeout).build()?;
 
-    let modules = modules::subdomain_modules(&client);
+    match cli.command {
+        Command::Modules => list_modules(&client),
+        Command::Scan(args) => scan(&client, args).await?,
+    }
+
+    Ok(())
+}
+
+fn list_modules(client: &Client) {
+    println!("Subdomain modules");
+    for module in modules::subdomain_modules(client) {
+        println!("  {:<12} {}", module.name(), module.description());
+    }
+}
+
+async fn scan(client: &Client, args: ScanArgs) -> Result<(), ScanError> {
+    let modules = modules::subdomain_modules(client);
 
     let sub_domains = subdomains::discover(&modules, &args.domain, args.concurrency).await?;
 
@@ -47,6 +67,5 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let names: Vec<&str> = names_by_ip[ip].iter().map(String::as_str).collect();
         println!("{ip:<40} {:<40} {ports:?}", names.join(", "));
     }
-
     Ok(())
 }
