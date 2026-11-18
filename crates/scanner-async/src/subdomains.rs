@@ -2,50 +2,15 @@ use std::{collections::BTreeSet, net::IpAddr};
 
 use futures::{StreamExt, stream};
 use hickory_resolver::TokioResolver;
-use reqwest::{self, Client};
 
-use crate::{
-    error::ScanError,
-    models::{CrtEntry, SubDomain},
-};
-
-pub async fn crt_entries(client: &Client, target: &str) -> reqwest::Result<Vec<CrtEntry>> {
-    let target = target.trim().to_lowercase();
-    let url = format!("https://crt.sh/?q=%25.{}&output=json", target);
-
-    let entries: Vec<CrtEntry> = client
-        .get(url)
-        .send()
-        .await?
-        .error_for_status()?
-        .json()
-        .await?;
-
-    Ok(entries)
-}
-
-pub async fn subdomains_names(client: &Client, target: &str) -> reqwest::Result<BTreeSet<String>> {
-    let target = target.trim().to_lowercase();
-    let entries = crt_entries(client, &target).await?;
-
-    let mut unique_subdomains_names: BTreeSet<String> = entries
-        .iter()
-        .flat_map(|e| e.name_value.split("\n"))
-        .map(|name| name.trim().to_lowercase())
-        .filter(|name| !name.contains("*"))
-        .collect();
-
-    unique_subdomains_names.insert(target);
-
-    Ok(unique_subdomains_names)
-}
+use crate::{error::ScanError, models::SubDomain, modules::SubDomainModule};
 
 pub async fn enumerate(
-    client: &Client,
+    modules: &[Box<dyn SubDomainModule>],
     target: &str,
     concurrency: usize,
 ) -> Result<Vec<SubDomain>, ScanError> {
-    let names = subdomains_names(client, target).await?;
+    let names = names(modules, target).await;
     let resolver = TokioResolver::builder_tokio()?.build()?;
     let ref_resolver = &resolver;
 
@@ -67,4 +32,24 @@ pub async fn enumerate(
 pub async fn resolve(name: &str, resolver: &TokioResolver) -> Result<BTreeSet<IpAddr>, ScanError> {
     let ips: BTreeSet<IpAddr> = resolver.lookup_ip(name).await?.into_iter().collect();
     Ok(ips)
+}
+
+pub async fn names(modules: &[Box<dyn SubDomainModule>], target: &str) -> BTreeSet<String> {
+    let target = target.trim().to_lowercase();
+    let mut names = BTreeSet::new();
+
+    for module in modules {
+        match module.enumerate(&target).await {
+            Ok(found) => names.extend(
+                found
+                    .iter()
+                    .map(|name| name.trim().to_lowercase())
+                    .filter(|name| !name.contains('*')),
+            ),
+            Err(e) => eprintln!("[{}] failed: {e}", module.name()),
+        }
+    }
+
+    names.insert(target);
+    names
 }
