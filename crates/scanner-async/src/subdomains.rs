@@ -36,6 +36,7 @@ pub async fn resolve(name: &str, resolver: &TokioResolver) -> Result<BTreeSet<Ip
 
 pub async fn names(modules: &[Box<dyn SubDomainModule>], target: &str) -> BTreeSet<String> {
     let target = target.trim().to_lowercase();
+    let suffix = format!(".{target}");
     let mut names = BTreeSet::new();
 
     for module in modules {
@@ -44,7 +45,7 @@ pub async fn names(modules: &[Box<dyn SubDomainModule>], target: &str) -> BTreeS
                 found
                     .iter()
                     .map(|name| name.trim().to_lowercase())
-                    .filter(|name| !name.contains('*')),
+                    .filter(|name| !name.contains('*') && name.ends_with(&suffix)),
             ),
             Err(e) => eprintln!("[{}] failed: {e}", module.name()),
         }

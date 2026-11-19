@@ -18,5 +18,8 @@ pub trait SubDomainModule: Module + Send + Sync {
 }
 
 pub fn subdomain_modules(client: &Client) -> Vec<Box<dyn SubDomainModule>> {
-    vec![Box::new(subdomains::CrtSh::new(client.clone()))]
+    vec![
+        Box::new(subdomains::CrtSh::new(client.clone())),
+        Box::new(subdomains::WebArchive::new(client.clone())),
+    ]
 }
